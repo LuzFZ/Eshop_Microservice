@@ -2,6 +2,8 @@
 
 public class Product
 {
+    internal decimal Price;
+
     public int Id { get; set; }
 
     public string Name { get; set; } = default!;

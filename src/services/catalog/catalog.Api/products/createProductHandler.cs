@@ -1,34 +1,33 @@
-﻿using System.ComponentModel;
-using BuildingBlocks.CQRS;
+﻿using catalog.Api.Models;
 using MediatR;
-using catalog.Api.Models;
+
 namespace catalog.Api.products;
 
-public record createPublicCommand(string Name, List<string> Category, string Description, string ImageFile, decimal price)
-    : Icommand <createProductResult>;
-public record createProductResult(Guid Id);
-internal class createProductHandler : IcommandHandler<createPublicCommand, createProductResult>
-{
-    public async Task<createProductResult> Handle(createPublicCommand command, CancellationToken cancellationToken)
-    {
-        //busines logic to create  a product 
-        //save to database 
-        //return resultCreateProduct result
+// Command que MediatR puede enrutar
+public record CreateProductCommand(
+    string Name,
+    List<string> Category,
+    string Description,
+    string ImageFile,
+    decimal Price) : IRequest<CreateProductResult>;
 
+// Resultado
+public record CreateProductResult(Guid Id);
+
+// Handler que MediatR puede encontrar
+internal class CreateProductHandler : IRequestHandler<CreateProductCommand, CreateProductResult>
+{
+    public Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    {
         var product = new Product
         {
             Name = command.Name,
             Category = command.Category,
             Description = command.Description,
-            ImageFile = command.ImageFile
-
+            ImageFile = command.ImageFile,
+            Price = command.Price
         };
-        //TODO 
-        //save to database 
-        //return result
 
-        return new createProductResult(Guid.NewGuid());
-
-        
+        return Task.FromResult(new CreateProductResult(Guid.NewGuid()));
     }
 }
