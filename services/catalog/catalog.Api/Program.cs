@@ -2,25 +2,31 @@ using catalog.Api;
 using Carter;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// 1. Obtener la conexión del appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("Database");
-
-
-builder.Services.AddCarter();
-builder.Services.AddMediatR(config =>
+internal class Program
 {
-    config.RegisterServicesFromAssembly(typeof(Program).Assembly);
-});
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
 
-// 3. Configurar el Contexto de la BD
-builder.Services.AddDbContext<Catalog.Api.Data.CatalogContext>(options =>
-    options.UseSqlServer(connectionString))
+        // 1. Obtener la conexión del appsettings.json
+        var connectionString = builder.Configuration.GetConnectionString("Database");
 
-var app = builder.Build();
+        
+        builder.Services.AddCarter();
+        builder.Services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssembly(typeof(Program).Assembly);
+        });
 
+        // 3. Configurar el Contexto de la BD
+        builder.Services.AddDbContext<CatalogContext>(options =>
+            options.UseSqlServer(connectionString));
 
-app.MapCarter();
+        var app = builder.Build();
 
-app.Run();
+        
+        app.MapCarter();
+
+        app.Run();
+    }
+}
