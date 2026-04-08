@@ -2,9 +2,9 @@
 
 public class Product
 {
-    internal decimal Price;
+    
 
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public string Name { get; set; } = default!;
 
@@ -14,6 +14,6 @@ public class Product
 
     public string ImageFile { get; set; } = default!;
 
-    public decimal price { get; set; }
+    public decimal Price { get; set; }
 
 }

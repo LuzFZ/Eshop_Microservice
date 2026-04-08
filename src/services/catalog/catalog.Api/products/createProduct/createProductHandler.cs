@@ -1,23 +1,26 @@
-﻿using catalog.Api.Models;
-using MediatR;
+using BuildingBlocks.CQRS;
+using catalog.Api.Data;
+using catalog.Api.Models;
 
-namespace catalog.Api.products;
+namespace catalog.Api.products.createProduct;
 
-// Command que MediatR puede enrutar
-public record CreateProductCommand(
-    string Name,
-    List<string> Category,
-    string Description,
-    string ImageFile,
-    decimal Price) : IRequest<CreateProductResult>;
+public record CreateProductCommand(string Name, List<string> Category, string Description, string ImageFile, decimal Price)
+    : ICommand<CreateProductResult>;
 
-// Resultado
 public record CreateProductResult(Guid Id);
 
-// Handler que MediatR puede encontrar
-internal class CreateProductHandler : IRequestHandler<CreateProductCommand, CreateProductResult>
+internal class CreateProductHandler : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
-    public Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    // Declaramos la variable manualmente
+    private readonly CatalogContext _context;
+
+    // Constructor tradicional
+    public CreateProductHandler(CatalogContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
         var product = new Product
         {
@@ -28,6 +31,10 @@ internal class CreateProductHandler : IRequestHandler<CreateProductCommand, Crea
             Price = command.Price
         };
 
-        return Task.FromResult(new CreateProductResult(Guid.NewGuid()));
+        // Usamos _context con el guion bajo
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return new CreateProductResult(product.Id);
     }
 }
