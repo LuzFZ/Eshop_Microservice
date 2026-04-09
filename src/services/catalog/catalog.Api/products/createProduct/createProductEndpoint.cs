@@ -26,3 +26,4 @@ public class CreateProductEndpoint : ICarterModule
         .WithDescription("Create Product");
     }
 }
+

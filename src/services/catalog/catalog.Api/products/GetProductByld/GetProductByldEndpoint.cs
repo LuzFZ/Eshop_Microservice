@@ -3,7 +3,7 @@ using Mapster;
 
 namespace catalog.Api.products.GetProductByld;
 
-// Asegúrate de que este record esté exactamente así, con una sola coma entre propiedades
+
 public record GetProductByIdResponse(
     Guid Id,
     string Name,

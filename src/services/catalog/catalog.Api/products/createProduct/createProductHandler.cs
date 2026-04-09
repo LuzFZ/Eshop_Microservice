@@ -1,6 +1,7 @@
 using BuildingBlocks.CQRS;
 using catalog.Api.Data;
 using catalog.Api.Models;
+using FluentValidation;
 
 namespace catalog.Api.products.createProduct;
 
@@ -9,19 +10,28 @@ public record CreateProductCommand(string Name, List<string> Category, string De
 
 public record CreateProductResult(Guid Id);
 
-internal class CreateProductHandler : ICommandHandler<CreateProductCommand, CreateProductResult>
+public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
 {
-    // Declaramos la variable manualmente
-    private readonly CatalogContext _context;
-
-    // Constructor tradicional
-    public CreateProductHandler(CatalogContext context)
+    public CreateProductCommandValidator()
     {
-        _context = context;
+        RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
+        RuleFor(x => x.Category).NotEmpty().WithMessage("Category is required");    
+        RuleFor(x => x.ImageFile).NotEmpty().WithMessage("ImageFile is required");
+        RuleFor(x => x.Price).GreaterThan(0).WithMessage("Price must be greater than 0");
     }
+}
 
+internal class CreateProductCommandHandler(CatalogContext context, IValidator<CreateProductCommand> validator)
+    : ICommandHandler<CreateProductCommand, CreateProductResult>
+{
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors.FirstOrDefault()?.ErrorMessage);
+        }
+
         var product = new Product
         {
             Name = command.Name,
@@ -31,9 +41,8 @@ internal class CreateProductHandler : ICommandHandler<CreateProductCommand, Crea
             Price = command.Price
         };
 
-        // Usamos _context con el guion bajo
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.Products.Add(product);
+        await context.SaveChangesAsync(cancellationToken);
 
         return new CreateProductResult(product.Id);
     }
